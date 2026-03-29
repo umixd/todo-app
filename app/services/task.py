@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from app.repositories.task import TaskRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 
-	
+
 class TaskNotFoundError(Exception):
     pass
+
 
 class TaskService:
     """Ключевые операции с задачами, включая бизнес-логику, валидацию и прочее"""
@@ -16,7 +17,9 @@ class TaskService:
 
     def list_tasks(self) -> list[TaskRead]:
         tasks = self.repository.get_all()
-        return [TaskRead.model_validate(task) for task in tasks] # список Pydantic моделей
+        return [
+            TaskRead.model_validate(task) for task in tasks
+        ]  # список Pydantic моделей
 
     def create_task(self, payload: TaskCreate) -> TaskRead:
         task = self.repository.create(title=payload.title)
@@ -25,6 +28,8 @@ class TaskService:
 
     def update_task(self, task_id: str, payload: TaskUpdate) -> TaskRead:
         task = self.repository.get_by_id(task_id)
+        if task is None:
+            raise TaskNotFoundError(f"Task {task_id} not found")
 
         if payload.title is not None:
             task.title = payload.title
@@ -36,6 +41,8 @@ class TaskService:
 
     def delete_task(self, task_id: str) -> None:
         task = self.repository.get_by_id(task_id)
+        if task is None:
+            raise TaskNotFoundError(f"Task {task_id} not found")
 
         self.repository.delete(task)
         self.db.commit()

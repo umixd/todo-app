@@ -1,15 +1,12 @@
 import logging
-from multiprocessing import current_process
 from time import perf_counter
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.routing import request_response
 
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
-
 
 configure_logging()
 
@@ -27,10 +24,15 @@ app.add_middleware(
 
 app.state.current_number = 0
 
-@app.middleware("http")  # log_requests выполнится до и после обработки каждого HTTP-запроса
+
+@app.middleware(
+    "http"
+)  # log_requests выполнится до и после обработки каждого HTTP-запроса
 async def log_requests(request: Request, call_next) -> Response:
     started_at = perf_counter()
-    request.app.state.current_number += 1 # Увеличиваем счетчик запросов до выполнения эндпоинта
+    request.app.state.current_number += (
+        1  # Увеличиваем счетчик запросов до выполнения эндпоинта
+    )
     try:
         response: Response = await call_next(request)  # Работа самого эндпоинта
     except Exception:
@@ -43,14 +45,14 @@ async def log_requests(request: Request, call_next) -> Response:
         )
         raise
 
-    response.headers["X-Request-Number"] = str(request.app.state.current_number) 
+    response.headers["X-Request-Number"] = str(request.app.state.current_number)
     duration_ms = (perf_counter() - started_at) * 1000
     logger.info(
         "%s %s -> %s (%.2f ms)",
         request.method,
         request.url.path,
         response.status_code,
-        duration_ms
+        duration_ms,
     )
     return response
 

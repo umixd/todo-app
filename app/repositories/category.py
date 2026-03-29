@@ -12,7 +12,7 @@ class CategoryRepository:
 
     def get_all(self) -> list[CategoryORM]:
         """Получить все записи categories"""
-        return self.db.scalars(select(CategoryORM)).all()
+        return list(self.db.scalars(select(CategoryORM)).all())
 
     def get_by_id(self, category_id: str) -> CategoryORM | None:
         """Получить запись categories по id"""

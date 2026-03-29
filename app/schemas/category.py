@@ -14,4 +14,3 @@ class CategoryCreate(BaseModel):
 
 class CategoryUpdate(BaseModel):
     name: str
-
